@@ -1,0 +1,14 @@
+version: "3"
+services:
+  zcweb:
+    build: ./dockerfile
+    ports:
+      - "3334:3333"
+    volumes:
+      - /home/ubuntu/zc/server:/code
+    links:
+      - zcmongo
+    depends_on: -zcmongo
+  zcmongo: build:./dockerfile2
+volumes:
+  logvolume01: {}
