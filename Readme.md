@@ -66,5 +66,5 @@ networks:
    zcnode:
     driver: bridge
 ```
-Since we need to contact the mongo database from node container, you shoukd created a network group like `zcnode` and make it works on bridge mode. Once you put the networks options in each container, they can easily exchange data by their nicknames.
+Since we need to contact the mongo database from node container, you shoukd created a network group like `zcnode` and makes it works on bridge mode. Once you put the networks options in each container, they can easily exchange data by their nicknames.
 If you want learn more about docker compose, move to https://blog.51cto.com/9291927/2310444.
