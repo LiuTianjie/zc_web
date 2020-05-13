@@ -1,5 +1,5 @@
 <template>
-  <div class="buy">
+  <div class="buy" v-loading.fullscreen.lock="loading">
     <el-card header="购买车票（模拟）" class="check-card">
       <el-form :model="formData" ref="formData" label-width="100px" @submit.native.prevent="check">
         <el-form-item
@@ -23,13 +23,21 @@
             placeholder="请输入身份证号码"
           ></el-input>
         </el-form-item>
+
         <el-form-item
           prop="date"
           label="选择日期"
           :rules="[{ required: true, message: '日期不能为空',trigger: 'blur'}]"
         >
-          <el-date-picker :editable="false" v-model="formData.date" type="date" placeholder="选择日期"></el-date-picker>
+          <el-date-picker
+            :editable="false"
+            v-model="formData.date"
+            type="date"
+            placeholder="选择日期"
+            value-format="yyyy-MM-dd"
+          ></el-date-picker>
         </el-form-item>
+
         <el-form-item
           label="选择车次"
           prop="train"
@@ -45,6 +53,23 @@
             ></el-option>
           </el-select>
         </el-form-item>
+
+        <el-form-item
+          label="选择座位"
+          prop="set"
+          readonly="true"
+          :rules="[{ required: true, message: '座位不能为空',trigger: 'blur'}]"
+        >
+          <el-select v-model="formData.set" placeholder="请选择" type="set">
+            <el-option
+              v-for="item in formData.sets"
+              :key="item.value"
+              :label="item.label"
+              :value="item.label"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item>
           <el-button type="primary" native-type="submit">提交</el-button>
           <el-button @click="resetForm('formData')">重置</el-button>
@@ -61,10 +86,12 @@
 export default {
   data() {
     return {
+      loading: false,
       formData: {
         user: "",
         date: "",
         train: "",
+        set: "",
         options: [
           {
             value: "选项1",
@@ -78,6 +105,16 @@ export default {
             value: "选项3",
             label: "太原-海口"
           }
+        ],
+        sets: [
+          {
+            value: 1,
+            label: "1"
+          },
+          {
+            value: 2,
+            label: "2"
+          }
         ]
       }
     };
@@ -87,19 +124,27 @@ export default {
       let that = this;
       this.$refs["formData"].validate(async valid => {
         if (valid) {
+          this.$refs.answer.innerHTML = "购票中，请稍后";
+          this.loading = true;
           try {
             const res = await this.$http.post("/orders", this.formData);
-            this.$refs.answer.innerHTML = "购票中，请稍后";
-            this.$message({
-              message: "已提交！",
-              type: "success"
-            });
+            setTimeout(() => {
+              this.loading = false;
+              this.$message({
+                message: "购票成功！",
+                type: "success"
+              });
+            }, 500);
             this.resetForm("formData");
             this.$refs.answer.innerHTML = `购票成功！</p><p>
           日期：${res.data.date}</p><p>
-          车次：${res.data.train}`;
+          车次：${res.data.train}</p><p>
+          座位：${res.data.set}`;
           } catch (err) {
-            this.$refs.answer.innerHTML = "购票失败！";
+            setTimeout(() => {
+              this.loading = false;
+              this.$refs.answer.innerHTML = "购票失败！";
+            }, 500);
           }
         } else {
           this.$message.error("输入有误，请重试！");

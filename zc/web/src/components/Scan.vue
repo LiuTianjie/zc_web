@@ -1,5 +1,5 @@
 <template>
-  <div class="scan">
+  <div class="scan" v-loading.fullscreen.lock="loading">
     <el-avatar class="avatar" shape="circle" :size="100" fit="cover" :src="url"></el-avatar>
     <el-card header="验证身份" class="check-card">
       <el-form :model="formData" ref="formData" label-width="100px" @submit.native.prevent="check">
@@ -42,6 +42,7 @@ export default {
   name: "Scan",
   data() {
     return {
+      loading: false,
       formData: {
         id: ""
       },
@@ -57,20 +58,30 @@ export default {
       this.$refs["formData"].validate(async valid => {
         if (valid) {
           this.$refs.answer.innerHTML = "正在校验中，请稍后";
+          this.loading = true;
           try {
             const res = await this.$http.get(
               `/orders/${this.formData.id}`,
               this.formData
             );
-            this.$message({
-              message: "校验成功！",
-              type: "success"
-            });
+            setTimeout(() => {
+              this.loading = false;
+              this.$message({
+                message: "校验成功！",
+                type: "success"
+              });
+            }, 500);
+
             this.$refs.answer.innerHTML = `校验成功！</p><p>
           日期：${res.data.date}</p><p>
-          车次：${res.data.train}`;
+          车次：${res.data.train}</p><p>
+          座位：${res.data.set}
+          `;
           } catch (err) {
-            this.$refs.answer.innerHTML = "校验失败，未查找到您的信息！";
+            setTimeout(() => {
+              this.loading = false;
+              this.$refs.answer.innerHTML = "校验失败，未查找到您的信息！";
+            }, 500);
           }
         } else {
           this.$message.error("输入有误，请重试！");
@@ -116,5 +127,6 @@ export default {
 }
 p {
   color: white;
+  margin: 0, auto;
 }
 </style>
